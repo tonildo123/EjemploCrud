@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">EjemploCrud</string>
+    <string name="dni">DNI</string>
+</resources>
