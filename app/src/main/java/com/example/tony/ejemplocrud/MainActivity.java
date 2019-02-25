@@ -1,5 +1,7 @@
 package com.example.tony.ejemplocrud;
 
+import android.app.AlertDialog;
+import android.database.sqlite.SQLiteException;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
@@ -17,8 +19,9 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText et1, et2, et3, et4;
+    private EditText  et1, et2, et3, et4;
     private Button alta, baja, modificacion, consulta;
+    AdministrarCrudDB crud;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,147 +37,140 @@ public class MainActivity extends AppCompatActivity {
         modificacion = (Button) findViewById(R.id.button4);
         consulta = (Button) findViewById(R.id.button2);
 
+        crud = new AdministrarCrudDB(this, "",null, 1 );
 
 //CRUD (create(crear), read(leer), update(actualizar/modificar), delete(eliminar/borrar))
+
+
+
         //metodo para dar el alta
         alta.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                AdministrarCrudDB admin = new AdministrarCrudDB(getApplicationContext(),
+         public void onClick(View v) {
+                try {
+                    crud.insertar_contactos(et1.getText().toString(),
+                                            et2.getText().toString(),
+                                            et3.getText().toString(),
+                                            et4.getText().toString());
+                    Toast.makeText(getApplicationContext(), "Datos de contacto"
+                            +"\n"
+                            + et1.getText().toString() +"\n"
+                            + et2.getText().toString() +"\n"
+                            + et3.getText().toString() +"\n"
+                            + et4.getText().toString() +"\n"
+                            +"\n cargados", Toast.LENGTH_SHORT).show();
+                    // ponemos los campos a vacío para insertar el siguiente usuario
 
-                "administracion", null, 1);
+                    et1.setText(""); et2.setText(""); et3.setText(""); et4.setText("");
+                }catch(SQLiteException e){
 
-                SQLiteDatabase bd = admin.getWritableDatabase();
+                    Toast.makeText(getApplicationContext(), "contacto ya existe", Toast.LENGTH_SHORT).show();
+                }
 
-                String dni    = et1.getText().toString();
-                String nombre = et2.getText().toString();
-                String ciudad = et3.getText().toString();
-                String numero = et4.getText().toString();
 
-                ContentValues registro = new ContentValues();
-
-                registro.put("dni", dni);
-                registro.put("nombre", nombre);
-                registro.put("ciudad", ciudad);
-                registro.put("numero", numero);
-
-                // los inserto en la base de datos
-                bd.insert("usuario", null, registro);
-
-                bd.close();
-
-                // ponemos los campos a vacío para insertar el siguiente usuario
-                et1.setText(""); et2.setText(""); et3.setText(""); et4.setText("");
-
-                Toast.makeText(getApplicationContext(), "Datos del usuario cargados", Toast.LENGTH_SHORT).show();
-
-            }
-        });
-
+          }    });
         //metodo para dar de baja
         baja.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AdministrarCrudDB admin = new AdministrarCrudDB(getApplicationContext(),
-
-                        "administracion", null, 1);
-
-                SQLiteDatabase bd = admin.getWritableDatabase();
-
-                String dni = et1.getText().toString();
-
-                // aquí borro la base de datos del usuario por el dni
-                int cant = bd.delete("usuario", "dni=" + dni, null);
-
-                bd.close();
-
-                et1.setText(""); et2.setText(""); et3.setText(""); et4.setText("");
-
-                if (cant == 1)
-
-                    Toast.makeText(getApplicationContext(), "Usuario eliminado",
-
-                            Toast.LENGTH_SHORT).show();
-
-                else
-
-                    Toast.makeText(getApplicationContext(), "No existe usuario",
-
-                            Toast.LENGTH_SHORT).show();
+                bajaDNI();
+                //crud.eliminar_contactos(et1.getText().toString());
             }
         });
         //metodo para modificar
         modificacion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AdministrarCrudDB admin = new AdministrarCrudDB(getApplicationContext(),
 
-                        "administracion", null, 1);
-                SQLiteDatabase bd = admin.getWritableDatabase();
+                crud.modificar_contactos(et1.getText().toString(),
+                    et2.getText().toString(),
+                    et3.getText().toString(),
+                    et4.getText().toString());
 
-                String dni    = et1.getText().toString();
-                String nombre = et2.getText().toString();
-                String ciudad = et3.getText().toString();
-                String numero = et4.getText().toString();
+                Toast.makeText(getApplicationContext(), "Datos de contacto"
+                        +"\n"
+                        + et1.getText().toString() +"\n"
+                        + et2.getText().toString() +"\n"
+                        + et3.getText().toString() +"\n"
+                        + et4.getText().toString() +"\n"
+                        +"\n modificados", Toast.LENGTH_SHORT).show();
+                et1.setText(""); et2.setText(""); et3.setText(""); et4.setText("");
 
-                ContentValues registro = new ContentValues();
 
-                // actualizamos con los nuevos datos, la información cambiada
-                registro.put("nombre", nombre);
-                registro.put("ciudad", ciudad);
-                registro.put("numero", numero);
-
-                int cant = bd.update("usuario", registro, "dni=" + dni, null);
-
-                bd.close();
-
-                if (cant == 1)
-
-                    Toast.makeText(getApplicationContext(), "Datos modificados con éxito", Toast.LENGTH_SHORT)
-
-                            .show();
-
-                else
-
-                    Toast.makeText(getApplicationContext(), "No existe usuario",
-
-                            Toast.LENGTH_SHORT).show();
             }
         });
-
-
         //metodo para la consulta
-    consulta.setOnClickListener(new View.OnClickListener() {
+        consulta.setOnClickListener(new View.OnClickListener() {
     @Override
-    public void onClick(View v) {
-        AdministrarCrudDB admin = new AdministrarCrudDB(getApplicationContext(),
-
-                "administracion", null, 1);
-        SQLiteDatabase bd = admin.getWritableDatabase();
-
-        String dni = et1.getText().toString();
-
-        Cursor fila = bd.rawQuery(
-
-                "select nombre, ciudad, numero from usuario where dni=" + dni, null);
-
-        if (fila.moveToFirst()) {
-
-            et2.setText(fila.getString(1));
-            et3.setText(fila.getString(2));
-            et4.setText(fila.getString(3));
-
-        } else
-
-            Toast.makeText(getApplicationContext(), "No existe ningún usuario con ese dni",
-
-                    Toast.LENGTH_SHORT).show();
-
-        bd.close();
-
+    public void onClick(View v) { consultaDNI();
 
     }
 });
+    }
 
+
+
+      public  void bajaDNI(){
+          String dniconsulta = et1.getText().toString();
+          AdministrarCrudDB admin = new AdministrarCrudDB(getApplicationContext(),
+
+                  "administracion.db", null, 1);
+          SQLiteDatabase bd = admin.getReadableDatabase();
+
+        // aquí borro la base de datos del usuario por el dni
+        int cant = bd.delete("contactos", "dni=" +  dniconsulta, null);
+        bd.close();
+
+        if (cant == 1) {
+
+            Toast.makeText(getApplicationContext(), "Contacto eliminado",
+
+            Toast.LENGTH_SHORT).show();
+
+            et1.setText(""); et2.setText(""); et3.setText(""); et4.setText("");
+
+                      } else
+
+                       Toast.makeText(getApplicationContext(),
+                               "No existe contacto con dni : " + dniconsulta,
+
+                       Toast.LENGTH_SHORT).show();}
+
+
+
+        public  void consultaDNI(){
+
+
+        String dniconsulta = et1.getText().toString();
+        AdministrarCrudDB admin = new AdministrarCrudDB(getApplicationContext(),
+
+                "administracion.db", null, 1);
+        SQLiteDatabase bd = admin.getReadableDatabase();
+
+        Cursor fila = bd.rawQuery("select * from contactos where dni = " + dniconsulta, null);
+            et2.setText("");
+            et3.setText("");
+            et4.setText("");
+        if (fila != null) {
+            if(fila.moveToFirst()){
+                et2.append(fila.getString(1));
+                et3.append(fila.getString(2));
+                et4.append(fila.getString(3));
+                fila.close();
+                bd.close();
+                                    }
+            else
+
+                Toast.makeText(getApplicationContext(), "No existe ningún usuario con ese dni",
+
+                        Toast.LENGTH_SHORT).show();
+
+                          }
     }
 }
+
+
+
+
+
+
