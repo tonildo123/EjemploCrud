@@ -45,15 +45,7 @@ public class AdministrarCrudDB extends SQLiteOpenHelper {
 
     }
 
-    public void eliminar_contactos(String dnconsultai) {
-        int i = this.getWritableDatabase().delete("contactos", "dni=´" + dnconsultai + "'", null);
-        if(i == 1 ){
 
-
-        }
-
-
-    }
 
         public void modificar_contactos(String dniConsulta, String nombre, String ciudad, String telefono) {
         this.getWritableDatabase().execSQL
